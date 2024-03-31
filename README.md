@@ -1,7 +1,9 @@
 # Efficient-DL-models-Seminars
 
-## Lectue one Introduction:
 
+
+## Lecture one
+### Introduction:
 
 - Which model is more suitable for a taks?
 - Which data is more suitable for a task?
@@ -23,5 +25,5 @@
 - ONNX
 - TensorRT
 
-## Seminar one:
+### Seminar :
 - Compute FLOPS and analyze memory-bound by plooting FLOPs vs Latenncey plots with different configurations
