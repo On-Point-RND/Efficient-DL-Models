@@ -1,4 +1,4 @@
-```markdown
+
 # PART 1: HARDWARE AND LOW-LEVEL OPTIMIZATION
 
 ## Session 1
@@ -66,7 +66,3 @@
 
 **Seminar:**
 - Differentiated architecture search and evolution.
-
-
-
-```
