@@ -24,8 +24,8 @@ class IBNorm(nn.Module):
         self.inorm = nn.InstanceNorm2d(self.inorm_channels, affine=False)
         
     def forward(self, x):
-        bn_x = self.bnorm(x[:, :self.bnorm_channels, ...].contiguous())
-        in_x = self.inorm(x[:, self.bnorm_channels:, ...].contiguous())
+        bn_x = self.bnorm(x[:, :self.bnorm.num_features, ...].contiguous())
+        in_x = self.inorm(x[:, -self.inorm.num_features: , ...].contiguous())
 
         return torch.cat((bn_x, in_x), 1)
 
@@ -102,7 +102,7 @@ class LRBranch(nn.Module):
         self.conv_lr8x = Conv2dIBNormRelu(enc_channels[3], enc_channels[2], 5, stride=1, padding=2)
         self.conv_lr = Conv2dIBNormRelu(enc_channels[2], 1, kernel_size=3, stride=2, padding=1, with_ibn=False, with_relu=False)
 
-    def forward(self, img, inference):
+    def forward(self, img): #, inference):
         
  
         enc_features = self.backbone.forward(img)
@@ -121,7 +121,7 @@ class LRBranch(nn.Module):
         #     pred_semantic = torch.sigmoid(lr)
 
 
-        return pred_semantic, lr8x, [enc2x, enc4x] 
+        return lr8x, enc2x, enc4x #  pred_semantic, lr8x, [enc2x, enc4x] 
 
 
 class HRBranch(nn.Module):
@@ -155,7 +155,7 @@ class HRBranch(nn.Module):
             Conv2dIBNormRelu(hr_channels, 1, kernel_size=1, stride=1, padding=0, with_ibn=False, with_relu=False),
         )
 
-    def forward(self, img, enc2x, enc4x, lr8x, inference):
+    def forward(self, img, enc2x, enc4x, lr8x): # , inference):
         img2x = F.interpolate(img, scale_factor=1/2, mode='bilinear', align_corners=False)
         img4x = F.interpolate(img, scale_factor=1/4, mode='bilinear', align_corners=False)
 
@@ -178,7 +178,7 @@ class HRBranch(nn.Module):
         #     hr = self.conv_hr(torch.cat((hr, img), dim=1))
         #     pred_detail = torch.sigmoid(hr)
 
-        return pred_detail, hr2x
+        return hr2x #  pred_detail, hr2x
 
 
 class FusionBranch(nn.Module):
@@ -239,12 +239,13 @@ class MODNet(nn.Module):
         if self.backbone_pretrained:
             self.backbone.load_pretrained_ckpt()                
 
-    def forward(self, img, inference):
-        pred_semantic, lr8x, [enc2x, enc4x] = self.lr_branch(img, inference)
-        pred_detail, hr2x = self.hr_branch(img, enc2x, enc4x, lr8x, inference)
+    def forward(self, img, inference=False):
+        lr8x, enc2x, enc4x = self.lr_branch(img)
+        hr2x = self.hr_branch(img, enc2x, enc4x, lr8x)
         pred_matte = self.f_branch(img, lr8x, hr2x)
-
-        return pred_semantic, pred_detail, pred_matte
+        if inference:
+            return None, None, pred_matte
+        return pred_matte
     
     def freeze_norm(self):
         norm_types = [nn.BatchNorm2d, nn.InstanceNorm2d]
