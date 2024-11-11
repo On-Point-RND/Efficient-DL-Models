@@ -4,7 +4,7 @@
 
 <br />
 
-<img src="doc/gif/homepage_demo.gif" width="100%">
+
 
 <div align="center">MODNet is a model for <b>real-time</b> portrait matting with <b>only RGB image input</b></div>
 <div align="center">MODNet是一个<b>仅需RGB图片输入</b>的<b>实时</b>人像抠图模型</div>
